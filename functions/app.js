@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const serverless = require("serverless-http");
+const router = express.Router();
 const userModel = require("../models/user");
 const bcrypt = require('bcrypt');
 const jwt= require('jsonwebtoken');
@@ -25,37 +26,37 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 
-app.get('/',(req,res)=>{
+router.get('/',(req,res)=>{
     res.render("index")
 })
-app.get("/folder",(req,res)=>{
+router.get("/folder",(req,res)=>{
     res.render("folder")
 })
 
-app.get("/test",(req,res)=>{
+router.get("/test",(req,res)=>{
     res.render("test");
 })
 
-app.get("/logout",(req,res)=>{
+router.get("/logout",(req,res)=>{
     res.clearCookie("token")
     res.redirect("./login")
 })
 
-app.get("/login",(req,res)=>{
+router.get("/login",(req,res)=>{
     res.render("login");
 })
-app.get("/profile",isloggedIn,async(req,res)=>{
+router.get("/profile",isloggedIn,async(req,res)=>{
     let {email} = req.body;
     let user = await userModel.findOne({email:email})
     res.render("profile",{user})
 })
 
-app.post("/upload",upload.single('image'),(req,res)=>{
+router.post("/upload",upload.single('image'),(req,res)=>{
     console.log(req.body);
     console.log(req.file);
 })
 
- app.post("/register",async(req,res)=>{
+ router.post("/register",async(req,res)=>{
      let {name,age,email,password} = req.body;
     let user = await userModel.findOne({email});
     if (user){
@@ -80,7 +81,7 @@ app.post("/upload",upload.single('image'),(req,res)=>{
 
 
 
-app.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
     let { email, password } = req.body;
     let user = await userModel.findOne({ email });
     if (!user) return res.status(500).send("Something went wrong");
@@ -105,5 +106,5 @@ function isloggedIn(req,res,next){
         res.send("authorized");
     }
 }
-
-app.listen(1080)
+app.use("/.netlify/functions/app", router);
+module.exports.handler = serverless(app);
