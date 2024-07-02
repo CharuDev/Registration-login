@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const userModel = require("./models/user");
+const serverless = require("serverless-http");
+const userModel = require("../models/user");
 const bcrypt = require('bcrypt');
 const jwt= require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
